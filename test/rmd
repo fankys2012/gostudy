@@ -1,0 +1,43 @@
+1. RegisterDriver 注册 -- 仅仅只做了类型检查
+2.RegisterDataBase
+    sql.open 打开s数据库连接
+    addAliasWthDB -- 取别名？  将数据库连接等信息存入alias 结构体中
+        al.Name 数据库连接默认名称
+        al.DriverName 数据库驱动名称
+        al.DB  数据库连接信息 sql.open 的值 
+        al.DbBaser = newdbBaseMysql() 
+        al.Driver = 1 (mysql)
+
+        db.Ping() 检查连接是否可用？ sql.open().Ping() 
+
+        dataBaseCache.add(aliasName, al) 将al 信息存入缓存中
+
+    al.DataSource 连接原始信息 "root:123456@tcp(192.168.56.120:3306)/test?charset=utf8"
+3.detectTZ 时区校验？？
+    al.DB.QueryRow("SELECT TIMEDIFF(NOW(), UTC_TIMESTAMP)")
+
+models_info_f.go
+
+4. registerModel  newModelInfo {
+        mi = &modelInfo{}
+        mi.fields = newFields() // create new field info collection 
+        ind := reflect.Indirect(val)
+        mi.addrField = val // the original struct value
+        mi.name = ind.Type().Name() //User 
+        mi.fullName = getFullName(ind.Type()) //全路径
+        addModelFields(mi, ind, "", []int{})
+        return
+}
+
+5 .addModelFields() {
+    reflect.NumField //获取字段
+
+    newFieldInfo {
+        fi = new(fieldInfo) 
+
+        fieldType == 512 -》 
+    }
+}
+
+orm.go 
+1 . Insert()

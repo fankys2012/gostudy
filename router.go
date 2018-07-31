@@ -88,7 +88,9 @@ func (this *httpMux) addAction(controllerName string, rt reflect.Type) {
 }
 
 func (this *httpMux) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
-
+	if serverStatic(rw, r) {
+		return
+	}
 	path := strings.TrimPrefix(r.URL.Path, "/")
 	if path == "" || path == "/" {
 		//              rw.WriteHeader(http.StatusForbidden)
@@ -100,7 +102,6 @@ func (this *httpMux) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	// defer this.spool.Put(ctx)
 	ctx := &Context{}
 	ctx.Config(rw, r)
-	fmt.Printf("%v", ctx)
 
 	rPath := strings.Split(path, "/")
 	cname := strings.Title(rPath[0])
