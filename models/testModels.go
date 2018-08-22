@@ -12,7 +12,7 @@ type User struct {
 	Utoken string `orm:"size(1000)"`
 }
 
-func init() {
+func init_bak() {
 	orm.RegisterDriver("mysql", orm.DRMySQL)                                                           //注册数据库驱动
 	orm.RegisterDataBase("default", "mysql", "root:123456@tcp(192.168.56.120:3306)/test?charset=utf8") //注册一个别名为default的数据库
 	orm.SetMaxIdleConns("default", 30)                                                                 //设置数据库最大空闲连接

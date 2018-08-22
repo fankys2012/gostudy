@@ -3,19 +3,49 @@ package orm
 import (
 	"database/sql"
 	"fmt"
+	"sync"
 	"time"
 )
 
-type DrvierType int
+type DriverType int
 
 const (
 	_DriverType = iota
 	DRMySQL
 )
 
+type dbCache struct {
+	mux   sync.RWMutex
+	cache map[string]*alias
+}
+
+func (cache *dbCache) add(name string, al *alias) bool {
+	cache.mux.Lock()
+	defer cache.mux.Unlock()
+	if _, ok := cache.cache[name]; !ok {
+		cache.cache[name] = al
+		return true
+	}
+	return false
+}
+
+func (cache *dbCache) get(name string) (al *alias, ok bool) {
+	cache.mux.Lock()
+	defer cache.mux.Unlock()
+	al, ok = cache.cache[name]
+	return
+}
+
+var (
+	drivers = map[string]DriverType{
+		"mysql": DRMySQL,
+	}
+	dataBaseCache = &dbCache{cache: make(map[string]*alias)}
+)
+
 type alias struct {
-	Name string
-	// Driver       DriverType
+	Name         string
+	Driver       DriverType
 	DriverName   string
 	DataSource   string
 	MaxIdleConns int
@@ -57,7 +87,16 @@ func addAliasWthDB(aliasName, driverName string, db *sql.DB) (*alias, error) {
 	al.Name = aliasName
 	al.DriverName = driverName
 	al.DB = db
-
+	if dr, ok := drivers[driverName]; ok {
+		switch dr {
+		case DRMySQL:
+			al.DbBaser = NewBaseMysql()
+		}
+		al.Driver = dr
+	}
 	//db ping
+	if !dataBaseCache.add(aliasName, al) {
+		return nil, fmt.Errorf("DataBase alias name `%s` already registered, cannot reuse", aliasName)
+	}
 	return al, nil
 }

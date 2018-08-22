@@ -6,10 +6,10 @@ import (
 	"github.com/fankys2012/gostudy/models"
 )
 
-type User struct {
-	id   int64
-	name string
-}
+// type User struct {
+// 	id   int64
+// 	name string
+// }
 
 func main() {
 	var arc models.User

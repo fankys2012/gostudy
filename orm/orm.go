@@ -1,23 +1,53 @@
 package orm
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
+	"time"
+)
+
+// Define common vars
+var (
+	Debug = false
+	// DebugLog         = NewLog(os.Stdout)
+	DefaultRowsLimit = 1000
+	DefaultRelsDepth = 2
+	DefaultTimeLoc   = time.Local
+	ErrTxHasBegan    = errors.New("<Ormer.Begin> transaction already begin")
+	ErrTxDone        = errors.New("<Ormer.Commit/Rollback> transaction not begin")
+	ErrMultiRows     = errors.New("<QuerySeter> return multi rows")
+	ErrNoRows        = errors.New("<QuerySeter> no row found")
+	ErrStmtClosed    = errors.New("<QuerySeter> stmt already closed")
+	ErrArgs          = errors.New("<Ormer> args error may be empty")
+	ErrNotImplement  = errors.New("have not implement")
 )
 
 type orm struct {
-	db IDbQuerier
+	alias *alias
+	db    IDbQuerier
 }
 
 func NewOrm() IOrmer {
 	// BootStrap() // execute only once
 
 	o := new(orm)
-	// err := o.Using("default")
-	// if err != nil {
-	// 	panic(err)
-	// }
+	err := o.Using("default")
+	if err != nil {
+		panic(err)
+	}
 	return o
+}
+
+//chose db
+func (o *orm) Using(name string) error {
+	if al, ok := dataBaseCache.get(name); ok {
+		o.alias = al
+		o.db = al.DB
+	} else {
+		return fmt.Errorf("orm.Using unknown db name `%s`", name)
+	}
+	return nil
 }
 
 // get model info and model reflect value
@@ -38,7 +68,15 @@ func (o *orm) getMiInd(md interface{}, needPtr bool) (mi *modelInfo, ind reflect
 
 func (o *orm) Insert(md interface{}) (int64, error) {
 	mi, ind := o.getMiInd(md, true)
+
 	// mysql := orm.NewBaseMysql()
-	fmt.Println(md)
+	id, err := o.alias.DbBaser.Insert(o.db, mi, ind, o.alias.TZ)
+	fmt.Println(id, err)
 	return 0, nil
+}
+
+func (o *orm) Read(md interface{}, whereCols []string) error {
+	mi, ind := o.getMiInd(md, true)
+	err := o.alias.DbBaser.Read(o.db, mi, ind, whereCols)
+	return err
 }

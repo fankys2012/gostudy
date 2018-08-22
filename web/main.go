@@ -6,8 +6,8 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/fankys2012/gostudy"
-	"github.com/fankys2012/gostudy/controllers"
+	"github.com/fankys2012/gostudy/models"
+	// "github.com/astaxie/beego/orm"
 )
 
 func getCurrentPath() string {
@@ -24,10 +24,18 @@ func checkErr(err error) {
 	}
 }
 func main() {
-	path := getCurrentPath()
-	fmt.Println(path)
-	gostudy.Static["/static"] = "./views"
-	server := gostudy.NewServer("localhost", 9000)
-	server.Router(&controllers.UserController{})
-	server.Run()
+	var comt models.Comment
+	comt.GetOne(3, "content")
+	// commentModel := &models.Comment{}
+	// commentModel.Add("content", "title", 11)
+
+	// orm.RegisterDriver("mysql", orm.DRMySQL)                                                           //注册数据库驱动
+
+	fmt.Println("starting")
+	// path := getCurrentPath()
+	// fmt.Println(path)
+	// gostudy.Static["/static"] = "./views"
+	// server := gostudy.NewServer("localhost", 9000)
+	// server.Router(&controllers.UserController{})
+	// server.Run()
 }
