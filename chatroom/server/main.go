@@ -40,6 +40,90 @@ func readPkg(conn net.Conn) (mes message.Message, err error) {
 	return
 }
 
+//登陆逻辑
+func serverProcessLogin(conn net.Conn, mes *message.Message) (err error) {
+	// 1 从mes 取出 mes.data 并反序列化
+	var loginMes message.LoginMes
+	err = json.Unmarshal([]byte(mes.Data), &loginMes)
+	if err != nil {
+		fmt.Println("反序列化失败 err=", err)
+		return
+	}
+
+	var resMes message.Message
+	resMes.Type = message.LoginResMesType
+
+	//响应消息体
+	var loginResMes message.LoginResMes
+
+	//伪登陆
+	if loginMes.UserId == 100 && loginMes.UserPwd == "123456" {
+		loginResMes.Code = 200
+	} else {
+		//登陆失败
+		loginResMes.Code = 500
+		loginResMes.Error = "login failed"
+	}
+
+	//将 响应消息体序列化
+	data, err := json.Marshal(loginResMes)
+	if err != nil {
+		fmt.Println("序列化失败,err = ", err)
+		return
+	}
+
+	//4 将data 赋值给mes.Data
+	resMes.Data = string(data) //切片转字符串
+
+	data, err = json.Marshal(resMes)
+	if err != nil {
+		fmt.Println("序列化失败,err = ", err)
+		return
+	}
+	// 发送响应消息
+	err = writePkg(conn, data)
+	return
+}
+
+func writePkg(conn net.Conn, data []byte) (err error) {
+	//发送消息内容长度
+	// 先获取 data 的长度-> 转换成一个表示长度的byte切片
+	var pkgLen uint32
+	pkgLen = uint32(len(data))
+	var buf [4]byte
+	binary.BigEndian.PutUint32(buf[0:4], pkgLen) //len -> byte
+	//发送长度
+	n, err := conn.Write(buf[:4])
+	if n != 4 || err != nil {
+		fmt.Println("字符长度发送失败 ", err)
+		return
+	}
+
+	//发送消息体内容
+	//发送内容
+	n, err = conn.Write(data)
+	if uint32(n) != pkgLen || err != nil {
+		fmt.Println("消息内容发送失败 ", err)
+		return
+	}
+	return
+
+}
+
+func serverProcessMes(conn net.Conn, mes *message.Message) (err error) {
+	switch mes.Type {
+	case message.LoginMesType:
+		//登陆
+		err = serverProcessLogin(conn, mes)
+	case message.RegisterMesType:
+		//注册
+	default:
+		fmt.Println("消息类型不存在")
+
+	}
+	return
+}
+
 func process(conn net.Conn) {
 	defer conn.Close()
 
@@ -48,6 +132,10 @@ func process(conn net.Conn) {
 		mes, err := readPkg(conn)
 		if err != nil {
 			fmt.Println("消息读取失败", err)
+			return
+		}
+		err = serverProcessMes(conn, &mes)
+		if err != nil {
 			return
 		}
 		fmt.Println("mes=", mes)

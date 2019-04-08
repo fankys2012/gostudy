@@ -7,6 +7,7 @@ import (
 	"net"
 
 	"github.com/fankys2012/gostudy/chatroom/common/message"
+	"github.com/fankys2012/gostudy/chatroom/common/utils"
 )
 
 func login(userId int, userPwd string) (err error) {
@@ -68,6 +69,19 @@ func login(userId int, userPwd string) (err error) {
 	}
 
 	//处理服务器端响应消息
+	mes, err = utils.ReadPkg(conn)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
+	//解析效应消息
+	var reponseMes message.LoginResMes
+	err = json.Unmarshal([]byte(mes.Data), reponseMes)
+	if reponseMes.Code == 200 {
+		fmt.Printf("登陆成功")
+	} else if reponseMes.Code == 500 {
+		fmt.Println(reponseMes.Error)
+	}
 	return nil
 }
