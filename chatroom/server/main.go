@@ -110,6 +110,7 @@ func writePkg(conn net.Conn, data []byte) (err error) {
 
 }
 
+//根据不同的消息 处理不同的逻辑
 func serverProcessMes(conn net.Conn, mes *message.Message) (err error) {
 	switch mes.Type {
 	case message.LoginMesType:
