@@ -112,7 +112,7 @@ func newFieldInfo(mi *modelInfo, field reflect.Value, sf reflect.StructField, mN
 	fi.name = sf.Name
 	fi.column = getColumnName(sf, "")
 	fi.sf = sf
-	fi.pk = false
+	fi.pk = attrs["auto"]
 	fi.addrValue = addrField
 	fi.auto = attrs["auto"]
 

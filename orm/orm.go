@@ -80,3 +80,12 @@ func (o *orm) Read(md interface{}, whereCols []string) error {
 	err := o.alias.DbBaser.Read(o.db, mi, ind, whereCols)
 	return err
 }
+
+func (o *orm) Update(md interface{}, whereCols []string) (int64, error) {
+
+	return 0, nil
+}
+
+func (o *orm) Delete(md interface{}, whereCols []string) (int64, error) {
+	return 0, nil
+}

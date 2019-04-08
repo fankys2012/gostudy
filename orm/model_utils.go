@@ -16,6 +16,7 @@ var supportTag = map[string]int{
 	"reverse": 1,
 	"type":    1,
 	"auto":    2,
+	"pk":      2,
 }
 
 func parseStructTag(data string) (tags map[string]string, attrs map[string]bool) {
@@ -117,5 +118,46 @@ func getFieldType(val reflect.Value) (ft int, err error) {
 	if ft&IsFieldType == 0 {
 		err = fmt.Errorf("unsupport field type %s, may be miss setting tag", val)
 	}
+	return
+}
+
+func getPkColumnInfo(mi *modelInfo, ind reflect.Value) (column string, value interface{}, exists bool) {
+	fi := mi.fields.pk
+	v := ind.FieldByIndex(fi.fieldIndex)
+
+	switch fi.fieldType {
+	case TypeVarCharField, TypeCharField, TypeTextField, TypeJSONField, TypeJsonbField:
+		value = v.String()
+		exists = true
+	case TypeSmallIntegerField, TypeIntegerField, TypeBigIntegerField:
+		value = v.Int()
+		exists = true
+	}
+	column = fi.column
+	return
+}
+
+// get pk column info.
+func getExistPk(mi *modelInfo, ind reflect.Value) (column string, value interface{}, exist bool) {
+	fi := mi.fields.pk
+
+	v := ind.FieldByIndex(fi.fieldIndex)
+	if fi.fieldType&IsPositiveIntegerField > 0 {
+		vu := v.Uint()
+		exist = vu > 0
+		value = vu
+	} else if fi.fieldType&IsIntegerField > 0 {
+		vu := v.Int()
+		exist = true
+		value = vu
+	} else if fi.fieldType&IsRelField > 0 {
+		// _, value, exist = getExistPk(fi.relModelInfo, reflect.Indirect(v))
+	} else {
+		vu := v.String()
+		exist = vu != ""
+		value = vu
+	}
+
+	column = fi.column
 	return
 }

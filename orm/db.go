@@ -52,7 +52,7 @@ func (d *dbBase) collectValues(mi *modelInfo, ind reflect.Value, cols []string, 
 func (d *dbBase) collectFieldValues(mi *modelInfo, fi *fieldInfo, ind reflect.Value, insert bool) (interface{}, error) {
 	var value interface{}
 	if fi.pk {
-
+		_, value, _ = getExistPk(mi, ind)
 	} else {
 		field := ind.FieldByIndex(fi.fieldIndex)
 		if fi.isFielder {
@@ -182,6 +182,7 @@ func (d *dbBase) Read(q IDbQuerier, mi *modelInfo, ind reflect.Value, cols []str
 	wheres := strings.Join(whereCols, "` = ? AND `") // name`=? and `
 
 	query := fmt.Sprintf("SELECT `%s` FROM `%s` WHERE `%s` = ?", fields, mi.table, wheres)
+	fmt.Println(query)
 	//接收数据容器
 	refs := make([]interface{}, len(mi.fields.dbcols))
 	for i := range refs {
@@ -206,6 +207,33 @@ func (d *dbBase) Read(q IDbQuerier, mi *modelInfo, ind reflect.Value, cols []str
 	// d.setColsValues(mi, mind, mi.fields.dbcols, refs)
 	// ind.Set(mind)
 	return nil
+}
+
+func (d *dbBase) Update(q IDbQuerier, mi *modelInfo, ind reflect.Value, cols []string) (int64, error) {
+	pkName, pkValue, ok := getPkColumnInfo(mi, ind)
+	if !ok {
+		return 0, fmt.Errorf("not find pk column")
+	}
+	var setNames []string
+	setNames = make([]string, 0, len(cols))
+
+	setValues, _, err := d.collectValues(mi, ind, cols, &setNames, false)
+	if err != nil {
+		return 0, err
+	}
+
+	//where condition append to setValues
+	setValues = append(setValues, pkValue)
+
+	setColumn := strings.Join(setNames, "`=? ,`")
+
+	query := fmt.Sprintf("UPDATE `%s` SET `%s` = ? where `%s` = ? ", mi.table, setColumn, pkName)
+
+	res, err := q.Exec(query, setValues...)
+	if err == nil {
+		return res.RowsAffected()
+	}
+	return 0, nil
 }
 
 func (d *dbBase) setColsValues(mi *modelInfo, ind reflect.Value, cols []string, values []interface{}) {
@@ -595,3 +623,5 @@ func debugLogQueies(query string, err error, args ...interface{}) {
 	}
 	fmt.Println(con)
 }
+
+//https://blog.csdn.net/iyeahme/article/details/74932619

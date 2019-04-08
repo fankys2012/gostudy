@@ -17,6 +17,8 @@ type IDbQuerier interface {
 type IOrmer interface {
 	Insert(interface{}) (int64, error)
 	Read(interface{}, []string) error
+	Delete(interface{}, []string) (int64, error)
+	Update(interface{}, []string) (int64, error)
 }
 
 type IDbBaser interface {

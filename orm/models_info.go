@@ -87,6 +87,16 @@ func addModelFields(mi *modelInfo, ind reflect.Value, name string, index []int) 
 		if !mi.fields.Add(fi) {
 			err = fmt.Errorf("duplicate column name: %s", fi.name)
 		}
+		//field is pk
+		if fi.pk {
+			if mi.fields.pk != nil {
+				err = fmt.Errorf("one model must have one pk field only")
+				break
+			} else {
+				mi.fields.pk = fi
+			}
+		}
+
 	}
 
 	if err != nil {
