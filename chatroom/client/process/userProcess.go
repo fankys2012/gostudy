@@ -1,8 +1,9 @@
-package main
+package process
 
 import (
 	"encoding/binary"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net"
 
@@ -10,9 +11,11 @@ import (
 	"github.com/fankys2012/gostudy/chatroom/common/utils"
 )
 
-func login(userId int, userPwd string) (err error) {
-	// fmt.Printf("userId = %d userPwd = %s ", userId, userPwd)
-	// return nil
+type UserProcess struct {
+}
+
+//用户登录客服端部分
+func (this *UserProcess) Login(userId int, userPwd string) (err error) {
 
 	//链接服务器
 	conn, err := net.Dial("tcp", "localhost:8888")
@@ -69,7 +72,10 @@ func login(userId int, userPwd string) (err error) {
 	}
 
 	//处理服务器端响应消息
-	mes, err = utils.ReadPkg(conn)
+	transfer := &utils.Transfer{
+		Conn: conn,
+	}
+	mes, err = transfer.ReadPkg()
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -77,11 +83,23 @@ func login(userId int, userPwd string) (err error) {
 
 	//解析效应消息
 	var reponseMes message.LoginResMes
-	err = json.Unmarshal([]byte(mes.Data), reponseMes)
+	//json.Unmarshal 第二个参数必须是地址 坑啊坑啊 。。。。
+	err = json.Unmarshal([]byte(mes.Data), &reponseMes)
+	fmt.Println(reponseMes)
 	if reponseMes.Code == 200 {
-		fmt.Printf("登陆成功")
+
+		/**
+		 * 启动一个协程，该协程保持与服务器端的通讯，如果服务器推送消息给客服端
+		 * 则接收并显示在终端
+		 */
+		go serverProcessMes(conn)
+		//显示登录成功后的界面
+		showMenu()
+
 	} else if reponseMes.Code == 500 {
 		fmt.Println(reponseMes.Error)
+		err = errors.New(reponseMes.Error)
+		return err
 	}
 	return nil
 }
