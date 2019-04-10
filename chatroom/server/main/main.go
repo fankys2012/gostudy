@@ -4,7 +4,14 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"time"
+
+	"github.com/fankys2012/gostudy/chatroom/server/model"
 )
+
+func initUserDao() {
+	model.MyUserDao = model.NewUserDao(pool)
+}
 
 func dispatch(conn net.Conn) {
 	defer conn.Close()
@@ -20,6 +27,9 @@ func dispatch(conn net.Conn) {
 }
 
 func main() {
+
+	initRedisPoll("localhost:6379", 16, 0, 300*time.Second)
+	initUserDao()
 
 	fmt.Println("服务器在8888端口监听")
 	listen, err := net.Listen("tcp", "0.0.0.0:8888")
