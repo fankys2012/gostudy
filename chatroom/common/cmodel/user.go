@@ -1,4 +1,4 @@
-package model
+package cmodel
 
 type User struct {
 	UserId   int    `json:"userId"`

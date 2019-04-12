@@ -7,8 +7,9 @@ import (
 )
 
 var (
-	userId  int
-	userPwd string
+	userId   int
+	userPwd  string
+	userName string
 )
 
 func main() {
@@ -36,7 +37,8 @@ func main() {
 			fmt.Println("登录err=", err)
 			// loop = false
 		case 2:
-			fmt.Println("注册用")
+			userprocess := &process.UserProcess{}
+			_ = userprocess.PreRegister()
 			// loop = false
 		case 3:
 			fmt.Println("退出聊天室")

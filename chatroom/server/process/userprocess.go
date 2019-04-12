@@ -3,6 +3,7 @@ package process
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/fankys2012/gostudy/chatroom/server/model"
 	"net"
 
 	"github.com/fankys2012/gostudy/chatroom/common/message"
@@ -59,5 +60,22 @@ func (this *UserProcess) ServerProcessLogin(mes *message.Message) (err error) {
 		Conn: this.Conn,
 	}
 	err = transfer.WritePkg(data)
+	return
+}
+
+func (this *UserProcess) ServerCheckUserExitsById(mes *message.Message) (err error) {
+	// 1 从mes 取出 mes.data 并反序列化
+	var loginMes message.LoginMes
+	err = json.Unmarshal([]byte(mes.Data), &loginMes)
+	if err != nil {
+		return
+	}
+	ok , err := model.MyUserDao.ExistsById(loginMes.UserId)
+	if err != nil {
+		return
+	}
+	if ok {
+		err = model.ERROR_USER_EXISTS
+	}
 	return
 }

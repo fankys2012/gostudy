@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/fankys2012/gostudy/chatroom/common/cmodel"
 	"github.com/fankys2012/gostudy/chatroom/common/message"
 	"github.com/fankys2012/gostudy/chatroom/common/utils"
 )
@@ -101,5 +102,29 @@ func (this *UserProcess) Login(userId int, userPwd string) (err error) {
 		err = errors.New(reponseMes.Error)
 		return err
 	}
+	return nil
+}
+
+func (this *UserProcess) PreRegister() (err error) {
+	var userId int
+	fmt.Println("请输入用户ID")
+	for {
+		fmt.Scanf("%d\n", &userId)
+		if userId == 0 {
+			fmt.Println("用户ID无效请重新输入")
+		} else {
+
+		}
+
+		if userId == 10 {
+			break
+		}
+		fmt.Println("用户已存在请重新输入")
+	}
+	fmt.Println("输入结束")
+	return nil
+}
+
+func (this *UserProcess) Register(user *cmodel.User) (err error) {
 	return nil
 }

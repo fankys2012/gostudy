@@ -1,9 +1,9 @@
 package model
 
 import (
-	"fmt"
 	"strconv"
 
+	"github.com/fankys2012/gostudy/chatroom/common/cmodel"
 	"github.com/garyburd/redigo/redis"
 )
 
@@ -22,7 +22,7 @@ func NewUserDao(pool *redis.Pool) (userDao *UserDao) {
 		pool: pool,
 	}
 }
-func (this *UserDao) getUserById(conn redis.Conn, id int) (user *User, err error) {
+func (this *UserDao) getUserById(conn redis.Conn, id int) (myuser *cmodel.User, err error) {
 	key := "user:" + strconv.Itoa(id)
 	value, err := redis.StringMap(conn.Do("hgetall", key))
 	if err != nil {
@@ -33,21 +33,23 @@ func (this *UserDao) getUserById(conn redis.Conn, id int) (user *User, err error
 		}
 		return
 	}
-	user = &user
-	//string -> int
-	uid, err := strconv.Atoi(value["id"])
-	fmt.Printf("%T vale = %d", uid, uid)
-	// if err == nil {
-	user.UserId = uid
-	// }
+	//存在err == nil 但是未获取到数据的情况
+	if _, ok := value["id"]; !ok {
+		err = ERROR_USER_NOTEXISTS
+		return
+	}
 
-	// user.UserName = value["name"]
-	// user.UserPwd = value["pwd"]
-	// fmt.Println(value)
+	var user cmodel.User
+	myuser = &user
+	// string -> int
+	uid, err := strconv.Atoi(value["id"])
+	user.UserId = uid
+	user.UserName = value["name"]
+	user.UserPwd = value["pwd"]
 	return
 }
 
-func (this *UserDao) Login(id int, pwd string) (user *User, err error) {
+func (this *UserDao) Login(id int, pwd string) (user *cmodel.User, err error) {
 	conn := this.pool.Get()
 	defer conn.Close()
 
@@ -55,11 +57,11 @@ func (this *UserDao) Login(id int, pwd string) (user *User, err error) {
 	if err != nil {
 		return
 	}
-	fmt.Println(user)
 
-	// if user.UserPwd != pwd {
-	// 	return
-	// }
+	if user.UserPwd != pwd {
+		err = ERROR_USER_PWD_ERROR
+		return
+	}
 	return
 }
 
@@ -80,7 +82,7 @@ func (this *UserDao) ExistsById(id int) (bool, error) {
 	return true, nil
 }
 
-func (this *UserDao) Register(user *User) (err error) {
+func (this *UserDao) Register(user *cmodel.User) (err error) {
 
 	//用户ID是否存在
 	exists, err := this.ExistsById(user.UserId)
