@@ -3,8 +3,9 @@ package process
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/fankys2012/gostudy/chatroom/server/model"
 	"net"
+
+	"github.com/fankys2012/gostudy/chatroom/server/model"
 
 	"github.com/fankys2012/gostudy/chatroom/common/message"
 	"github.com/fankys2012/gostudy/chatroom/common/utils"
@@ -12,6 +13,13 @@ import (
 
 type UserProcess struct {
 	Conn net.Conn
+}
+
+//工厂方法 -- 实例化对象
+func NewUserPorcess(conn net.Conn) (userprocess *UserProcess) {
+	return &UserProcess{
+		Conn: conn,
+	}
 }
 
 //登陆逻辑
@@ -63,6 +71,7 @@ func (this *UserProcess) ServerProcessLogin(mes *message.Message) (err error) {
 	return
 }
 
+//校验用户是否存在
 func (this *UserProcess) ServerCheckUserExitsById(mes *message.Message) (err error) {
 	// 1 从mes 取出 mes.data 并反序列化
 	var loginMes message.LoginMes
@@ -70,12 +79,27 @@ func (this *UserProcess) ServerCheckUserExitsById(mes *message.Message) (err err
 	if err != nil {
 		return
 	}
-	ok , err := model.MyUserDao.ExistsById(loginMes.UserId)
+	ok, err := model.MyUserDao.ExistsById(loginMes.UserId)
 	if err != nil {
 		return
 	}
+	var resposeMes message.StandardResponseMes
 	if ok {
-		err = model.ERROR_USER_EXISTS
+		resposeMes.Code = 200
+		resposeMes.Error = model.ERROR_USER_EXISTS.Error()
+	} else {
+		resposeMes.Code = 40
 	}
+
+	data, err := json.Marshal(resposeMes)
+	if err != nil {
+		fmt.Println("package response message failed ", err)
+		return
+	}
+	// 发送响应消息
+	transfer := &utils.Transfer{
+		Conn: this.Conn,
+	}
+	err = transfer.WritePkg(data)
 	return
 }

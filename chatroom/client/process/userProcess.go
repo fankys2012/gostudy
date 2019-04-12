@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net"
 
 	"github.com/fankys2012/gostudy/chatroom/common/cmodel"
@@ -13,6 +14,20 @@ import (
 )
 
 type UserProcess struct {
+	conn net.Conn
+}
+
+func NewUserPorcess() (userProcess *UserProcess, err error) {
+	//链接服务器
+	conn, err := net.Dial("tcp", "localhost:8888")
+	if err != nil {
+		fmt.Println("connect server failed ", err)
+		return
+	}
+	userProcess = &UserProcess{
+		conn: conn,
+	}
+	return
 }
 
 //用户登录客服端部分
@@ -105,6 +120,51 @@ func (this *UserProcess) Login(userId int, userPwd string) (err error) {
 	return nil
 }
 
+func (this *UserProcess) userExitsCheck(id int) (err error) {
+
+	loginMes := message.LoginMes{
+		UserId: id,
+	}
+	//序列化
+	data, err := json.Marshal(loginMes)
+	if err != nil {
+		fmt.Println("package heck user data failed", err)
+		return
+	}
+	sendData := message.Message{
+		Type: message.UserExitsMesType,
+		Data: string(data),
+	}
+	data, err = json.Marshal(sendData)
+	if err != nil {
+		return
+	}
+
+	//实例化utils 包
+	transfer := &utils.Transfer{
+		Conn: this.conn,
+	}
+	//向服务器发送验证用户是否存在的消息
+	err = transfer.WritePkg(data)
+	//处理服务器端响应消息
+	mes, err := transfer.ReadPkg()
+	if err != nil {
+		return
+	}
+
+	//解析效应消息
+	var resposeMes message.StandardResponseMes
+	//json.Unmarshal 第二个参数必须是地址 坑啊坑啊 。。。。
+	err = json.Unmarshal([]byte(mes.Data), &resposeMes)
+	if err != nil {
+		return
+	}
+	if resposeMes.Code == 200 {
+		err = errors.New(resposeMes.Error)
+	}
+	return
+}
+
 func (this *UserProcess) PreRegister() (err error) {
 	var userId int
 	fmt.Println("请输入用户ID")
@@ -113,13 +173,13 @@ func (this *UserProcess) PreRegister() (err error) {
 		if userId == 0 {
 			fmt.Println("用户ID无效请重新输入")
 		} else {
-
+			err := this.userExitsCheck(userId)
+			if err == io.EOF || err == nil  {
+				break
+			}
+			fmt.Println("用户已存在请重新输入,err == ", err)
 		}
 
-		if userId == 10 {
-			break
-		}
-		fmt.Println("用户已存在请重新输入")
 	}
 	fmt.Println("输入结束")
 	return nil

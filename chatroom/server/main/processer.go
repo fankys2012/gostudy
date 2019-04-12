@@ -25,6 +25,9 @@ func (this *Processer) serverProcessMes(mes *message.Message) (err error) {
 		err = userprocess.ServerProcessLogin(mes)
 	case message.RegisterMesType:
 		//注册
+	case message.UserExitsMesType:
+		userprocess := process.NewUserPorcess(this.Conn)
+		err = userprocess.ServerCheckUserExitsById(mes)
 	default:
 		fmt.Println("消息类型不存在")
 

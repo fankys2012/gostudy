@@ -37,7 +37,7 @@ func main() {
 			fmt.Println("登录err=", err)
 			// loop = false
 		case 2:
-			userprocess := &process.UserProcess{}
+			userprocess, _ := process.NewUserPorcess()
 			_ = userprocess.PreRegister()
 			// loop = false
 		case 3:
