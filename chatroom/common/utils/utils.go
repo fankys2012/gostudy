@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net"
 
 	"github.com/fankys2012/gostudy/chatroom/common/message"
@@ -21,7 +22,9 @@ func (this *Transfer) ReadPkg() (mes message.Message, err error) {
 	//&& err != io.EOF
 	if err != nil{
 		// err = errors.New("read pkg header error")
-		fmt.Println("读取服务器端消息长度失败. err :",err)
+		if err != io.EOF {
+			fmt.Println("读取消息长度失败. err :",err)
+		}
 		return
 	}
 
@@ -31,7 +34,7 @@ func (this *Transfer) ReadPkg() (mes message.Message, err error) {
 	//根据pkgLen 读取消息内容  从conn 中读取内容存入buf中
 	n, err := this.Conn.Read(this.Buf[:pkgLen])
 	if uint32(n) != pkgLen || err != nil {
-		fmt.Println("读取服务器端消息失败，err：", err)
+		fmt.Println("读取消息失败，err：", err)
 		// err = errors.New("read message body failed")
 		return
 	}
@@ -39,7 +42,7 @@ func (this *Transfer) ReadPkg() (mes message.Message, err error) {
 	//反序列化message  mes必须传地址; mes 在返回参数中已声明，不用重复声明
 	err = json.Unmarshal(this.Buf[:pkgLen], &mes)
 	if err != nil {
-		fmt.Println("解析服务器响应消息失败,err：", err)
+		fmt.Println("解析消息失败,err：", err)
 	}
 	return
 }

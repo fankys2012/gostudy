@@ -14,16 +14,16 @@ var (
 )
 
 type UserDao struct {
-	pool *redis.Pool
+	RedisPool *redis.Pool
 }
 
 //工厂模式
 func NewUserDao(pool *redis.Pool) (userDao *UserDao) {
 	return &UserDao{
-		pool: pool,
+		RedisPool: pool,
 	}
 }
-func (this *UserDao) getUserById(conn redis.Conn, id int) (myuser *cmodel.User, err error) {
+func (this *UserDao) GetUserById(conn redis.Conn, id int) (myuser *cmodel.User, err error) {
 	key := "user:" + strconv.Itoa(id)
 	value, err := redis.StringMap(conn.Do("hgetall", key))
 	if err != nil {
@@ -51,10 +51,10 @@ func (this *UserDao) getUserById(conn redis.Conn, id int) (myuser *cmodel.User, 
 }
 
 func (this *UserDao) Login(id int, pwd string) (user *cmodel.User, err error) {
-	conn := this.pool.Get()
+	conn := this.RedisPool.Get()
 	defer conn.Close()
 
-	user, err = this.getUserById(conn, id)
+	user, err = this.GetUserById(conn, id)
 	if err != nil {
 		return
 	}
@@ -69,7 +69,7 @@ func (this *UserDao) Login(id int, pwd string) (user *cmodel.User, err error) {
 //通过ID判断用户是否存在
 //false 不存在 ；true 存在
 func (this *UserDao) ExistsById(id int) (bool, error) {
-	conn := this.pool.Get()
+	conn := this.RedisPool.Get()
 	defer conn.Close()
 	key := "user:" + strconv.Itoa(id)
 	//只获取ID
@@ -97,7 +97,7 @@ func (this *UserDao) Register(user *cmodel.User) (err error) {
 		err = ERROR_USER_EXISTS
 		return
 	}
-	conn := this.pool.Get()
+	conn := this.RedisPool.Get()
 	defer conn.Close()
 	key := "user:" + strconv.Itoa(user.UserId)
 	_, err = conn.Do("hmset", key, "id", user.UserId, "name", user.UserName, "pwd", user.UserPwd)

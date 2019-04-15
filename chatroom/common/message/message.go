@@ -8,6 +8,7 @@ const (
 	RegisterMesType  = "RegisterMesType"
 	UserExitsMesType = "UserExitsMesType"
 	StandardResponseMesType = "StandardResponseMesType"
+	NotifyUserOnlineStateMesType = "NotifyUserOnlineStateMesType"
 )
 
 type Message struct {
@@ -23,6 +24,7 @@ type LoginMes struct {
 
 type LoginResMes struct {
 	Code  int    `json:"code"`  //返回状态码  500 未注册 200 登陆成功
+	UserList map[int]string `json:"userList"` //在线用户列表
 	Error string `json:"error"` //返回错误信息
 }
 
@@ -35,4 +37,10 @@ type StandardResponseMes struct {
 //注册消息体
 type RegisterMes struct {
 	User cmodel.User
+}
+
+//用户状态通知消息
+type NotifyUserOnlineStateMes struct {
+	UserId int `json:"userId"`
+	UserState int `json:"userState"`
 }

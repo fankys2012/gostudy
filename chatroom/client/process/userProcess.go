@@ -1,7 +1,6 @@
 package process
 
 import (
-	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -73,29 +72,16 @@ func (this *UserProcess) Login(userId int, userPwd string) (err error) {
 		return
 	}
 
-	//发送消息长度
-	// 先获取 data 的长度-> 转换成一个表示长度的byte切片
-	var pkgLen uint32
-	pkgLen = uint32(len(data))
-	var buf [4]byte
-	binary.BigEndian.PutUint32(buf[0:4], pkgLen) //len -> byte
-	//发送长度
-	n, err := conn.Write(buf[:4])
-	if n != 4 || err != nil {
-		fmt.Println("字符长度发送失败 ", err)
-		return
-	}
-	//发送内容
-	_, err = conn.Write(data)
-	if err != nil {
-		fmt.Println("消息内容发送失败 ", err)
-		return
-	}
-
 	//处理服务器端响应消息
 	transfer := &utils.Transfer{
 		Conn: conn,
 	}
+
+	err = transfer.WritePkg(data)
+	if err != nil {
+		fmt.Println("发送登录信息失败 err:",err)
+	}
+
 	mes, err = transfer.ReadPkg()
 	if err != nil {
 		fmt.Println(err)
@@ -106,9 +92,24 @@ func (this *UserProcess) Login(userId int, userPwd string) (err error) {
 	var reponseMes message.LoginResMes
 	//json.Unmarshal 第二个参数必须是地址 坑啊坑啊 。。。。
 	err = json.Unmarshal([]byte(mes.Data), &reponseMes)
-	fmt.Println(reponseMes)
+	//fmt.Println(reponseMes)
 	if reponseMes.Code == 200 {
 
+		fmt.Println("当前在线用户列表:")
+		for id,v := range reponseMes.UserList {
+			if id == userId {
+				continue
+			}
+			fmt.Printf("[%d:%s]",id,v)
+
+			//本地维护的用户列表
+			user := &cmodel.User{
+				UserId:id,
+				UserName:v,
+				UserState:cmodel.UserOnline,
+			}
+			onlineUserList[id] = user
+		}
 		/**
 		 * 启动一个协程，该协程保持与服务器端的通讯，如果服务器推送消息给客服端
 		 * 则接收并显示在终端
@@ -274,3 +275,4 @@ func (this *UserProcess) Register() (err error) {
 	}
 	return
 }
+

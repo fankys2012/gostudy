@@ -3,6 +3,7 @@ package process
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/fankys2012/gostudy/chatroom/common/cmodel"
 	"net"
 
 	"github.com/fankys2012/gostudy/chatroom/server/model"
@@ -13,6 +14,8 @@ import (
 
 type UserProcess struct {
 	Conn net.Conn
+	UserId int
+	UserName string
 }
 
 //工厂方法 -- 实例化对象
@@ -32,19 +35,39 @@ func (this *UserProcess) ServerProcessLogin(mes *message.Message) (err error) {
 		return
 	}
 
-	var resMes message.Message
-	resMes.Type = message.LoginResMesType
-
 	//响应消息体
 	var loginResMes message.LoginResMes
 
-	//伪登陆
-	if loginMes.UserId == 100 && loginMes.UserPwd == "123456" {
-		loginResMes.Code = 200
-	} else {
-		//登陆失败
+	//从redis/db 获取用户信息
+	redisConn := model.MyUserDao.RedisPool.Get()
+	user,err := model.MyUserDao.GetUserById(redisConn,loginMes.UserId)
+	if err != nil {
+		fmt.Println("获取用户信息失败,err:",err)
 		loginResMes.Code = 500
-		loginResMes.Error = "login failed"
+		loginResMes.Error = "用户不存在，请重新登录"
+	} else {
+		if loginMes.UserId == user.UserId && loginMes.UserPwd == user.UserPwd {
+			loginResMes.Code = 200
+			//登录成功处理逻辑...
+			//将登录用户添加到在线用户列表中
+			this.UserId = loginMes.UserId
+			this.UserName = user.UserName
+			userMg.AddOnlineUser(this)
+
+			//将已上线的用户返回给当前登录用户
+			loginResMes.UserList = make(map[int]string)
+			for id ,user := range userMg.onlineUsers {
+				loginResMes.UserList[id] = user.UserName
+			}
+
+			//通知其他用户我上线了
+			this.NotifyOnlineState(cmodel.UserOnline)
+
+		} else {
+			//登陆失败
+			loginResMes.Code = 500
+			loginResMes.Error = "密码错误，请重新登录"
+		}
 	}
 
 	//将 响应消息体序列化
@@ -55,8 +78,12 @@ func (this *UserProcess) ServerProcessLogin(mes *message.Message) (err error) {
 		return
 	}
 
-	//4 将data 赋值给mes.Data
-	resMes.Data = string(data) //切片转字符串
+	//返回消息体
+	resMes := message.Message{
+		Type:message.LoginResMesType,
+		Data:string(data),//切片转字符串
+	}
+
 	fmt.Println("响应数据==", resMes.Data)
 	data, err = json.Marshal(resMes)
 	if err != nil {
@@ -74,7 +101,6 @@ func (this *UserProcess) ServerProcessLogin(mes *message.Message) (err error) {
 //校验用户是否存在
 func (this *UserProcess) ServerCheckUserExitsById(mes *message.Message) (err error) {
 	// 1 从mes 取出 mes.data 并反序列化
-	fmt.Println("ServerCheckUserExitsById")
 	var loginMes message.LoginMes
 	err = json.Unmarshal([]byte(mes.Data), &loginMes)
 	if err != nil {
@@ -82,7 +108,6 @@ func (this *UserProcess) ServerCheckUserExitsById(mes *message.Message) (err err
 	}
 	ok, err := model.MyUserDao.ExistsById(loginMes.UserId)
 	if err != nil {
-		fmt.Println("yes i am here err : ",err," OK :",ok)
 		return
 	}
 
@@ -104,7 +129,6 @@ func (this *UserProcess) ServerCheckUserExitsById(mes *message.Message) (err err
 		Type:message.UserExitsMesType,
 		Data:string(data),
 	}
-	fmt.Println("ServerCheckUserExitsById response json ",smes)
 	data, err = json.Marshal(smes)
 	if err != nil {
 		fmt.Println("package response message failed ", err)
@@ -159,4 +183,46 @@ func (this *UserProcess) ServerRegister(mes *message.Message)(err error)  {
 
 
 	return
+}
+
+//通知其他在线用户我的状态
+func (this *UserProcess) NotifyOnlineState(state int)  {
+	for id,uprocess := range userMg.onlineUsers {
+		//过滤自己
+		if id == this.UserId {
+			continue
+		}
+		uprocess.notifyState(id,state)
+	}
+}
+
+func (this *UserProcess) notifyState(userId ,state int)  {
+	//通知消息体
+	userState := message.NotifyUserOnlineStateMes{
+		UserId:userId,
+		UserState:state,
+	}
+
+	data,err := json.Marshal(userState)
+	if err != nil {
+		return
+	}
+
+	mes := message.Message{
+		Type:message.NotifyUserOnlineStateMesType,
+		Data:string(data),
+	}
+	data,err = json.Marshal(mes)
+	if err != nil {
+		return
+	}
+
+	transfer := &utils.Transfer{
+		Conn:this.conn,
+	}
+	err = transfer.WritePkg(data)
+	if err !=nil {
+		return
+	}
+
 }

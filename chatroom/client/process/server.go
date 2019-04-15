@@ -1,7 +1,9 @@
 package process
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/fankys2012/gostudy/chatroom/common/message"
 	"net"
 	"os"
 
@@ -26,7 +28,7 @@ func showMenu() {
 
 		switch key {
 		case 1:
-			fmt.Println("用户列表")
+			showUserList()
 		case 2:
 			fmt.Println("发送消息")
 		case 3:
@@ -50,6 +52,14 @@ func serverProcessMes(conn net.Conn) {
 		mes, err := tf.ReadPkg()
 		if err != nil {
 			return
+		}
+		switch mes.Type {
+		case message.NotifyUserOnlineStateMesType:
+			var notifyUserState message.NotifyUserOnlineStateMes
+			json.Unmarshal([]byte(mes.Data),&notifyUserState)
+			
+		default:
+			fmt.Printf("未知消息类型%s",mes.Type)
 		}
 		fmt.Println("读取到服务器消息 mes=", mes)
 	}
