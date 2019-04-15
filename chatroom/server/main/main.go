@@ -21,6 +21,7 @@ func dispatch(conn net.Conn) {
 	}
 	err := processor.Do()
 	if err != nil {
+		fmt.Println("客户端和服务器协程通讯错误,服务端关闭该连接。err = ",err)
 		return
 	}
 
@@ -28,7 +29,7 @@ func dispatch(conn net.Conn) {
 
 func main() {
 
-	initRedisPoll("localhost:6379", 16, 0, 300*time.Second)
+	initRedisPoll("192.168.56.120:6379", 16, 0, 300*time.Second)
 	initUserDao()
 
 	fmt.Println("服务器在8888端口监听")

@@ -38,7 +38,8 @@ func main() {
 			// loop = false
 		case 2:
 			userprocess, _ := process.NewUserPorcess()
-			_ = userprocess.PreRegister()
+			err := userprocess.Register()
+			fmt.Println("注册结束了，要关闭连接了。。。 err=",err)
 			// loop = false
 		case 3:
 			fmt.Println("退出聊天室")

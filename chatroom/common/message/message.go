@@ -1,10 +1,13 @@
 package message
 
+import "github.com/fankys2012/gostudy/chatroom/common/cmodel"
+
 const (
 	LoginMesType     = "LoginMes"
 	LoginResMesType  = "LoginResMes"
 	RegisterMesType  = "RegisterMesType"
 	UserExitsMesType = "UserExitsMesType"
+	StandardResponseMesType = "StandardResponseMesType"
 )
 
 type Message struct {
@@ -27,4 +30,9 @@ type LoginResMes struct {
 type StandardResponseMes struct {
 	Code  int    `json:"code"`  //返回状态码
 	Error string `json:"error"` //返回错误信息
+}
+
+//注册消息体
+type RegisterMes struct {
+	User cmodel.User
 }

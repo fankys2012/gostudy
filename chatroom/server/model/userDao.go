@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/fankys2012/gostudy/chatroom/common/cmodel"
@@ -71,12 +72,15 @@ func (this *UserDao) ExistsById(id int) (bool, error) {
 	conn := this.pool.Get()
 	defer conn.Close()
 	key := "user:" + strconv.Itoa(id)
+	//只获取ID
 	_, err := redis.Int(conn.Do("hget", key, "id"))
 	if err != nil {
 		//在redis 中没有获取到值
 		if err == redis.ErrNil {
 			return false, nil
 		}
+		//redis 获取数据失败一定要记录日志，不然排查问题很不好排查
+		fmt.Println("Redis error :",err)
 		return false, err
 	}
 	return true, nil
@@ -84,6 +88,7 @@ func (this *UserDao) ExistsById(id int) (bool, error) {
 
 func (this *UserDao) Register(user *cmodel.User) (err error) {
 
+	fmt.Println("Register : ",user)
 	//用户ID是否存在
 	exists, err := this.ExistsById(user.UserId)
 	if err != nil {

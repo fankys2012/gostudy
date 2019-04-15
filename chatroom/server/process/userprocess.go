@@ -74,6 +74,7 @@ func (this *UserProcess) ServerProcessLogin(mes *message.Message) (err error) {
 //校验用户是否存在
 func (this *UserProcess) ServerCheckUserExitsById(mes *message.Message) (err error) {
 	// 1 从mes 取出 mes.data 并反序列化
+	fmt.Println("ServerCheckUserExitsById")
 	var loginMes message.LoginMes
 	err = json.Unmarshal([]byte(mes.Data), &loginMes)
 	if err != nil {
@@ -81,8 +82,10 @@ func (this *UserProcess) ServerCheckUserExitsById(mes *message.Message) (err err
 	}
 	ok, err := model.MyUserDao.ExistsById(loginMes.UserId)
 	if err != nil {
+		fmt.Println("yes i am here err : ",err," OK :",ok)
 		return
 	}
+
 	var resposeMes message.StandardResponseMes
 	if ok {
 		resposeMes.Code = 200
@@ -96,10 +99,64 @@ func (this *UserProcess) ServerCheckUserExitsById(mes *message.Message) (err err
 		fmt.Println("package response message failed ", err)
 		return
 	}
+
+	smes := message.Message{
+		Type:message.UserExitsMesType,
+		Data:string(data),
+	}
+	fmt.Println("ServerCheckUserExitsById response json ",smes)
+	data, err = json.Marshal(smes)
+	if err != nil {
+		fmt.Println("package response message failed ", err)
+		return
+	}
+
 	// 发送响应消息
 	transfer := &utils.Transfer{
 		Conn: this.Conn,
 	}
 	err = transfer.WritePkg(data)
+	if err != nil {
+		fmt.Println("ServerCheckUserExitsById response faield err :",err)
+	}
+	return
+}
+
+func (this *UserProcess) ServerRegister(mes *message.Message)(err error)  {
+	var registerUser message.RegisterMes
+	err = json.Unmarshal([]byte(mes.Data),&registerUser)
+	if err != nil {
+		return
+	}
+	//直接调用model register 方法
+	err = model.MyUserDao.Register(&registerUser.User)
+	if err != nil {
+		return
+	}
+	resposeMes := message.StandardResponseMes{
+		Code:200,
+	}
+
+	resData ,err:= json.Marshal(resposeMes)
+	if err != nil {
+		return
+	}
+
+	resMes := message.Message{
+		Type:message.StandardResponseMesType,
+		Data:string(resData),
+	}
+	resMesJson ,err := json.Marshal(resMes)
+	if err != nil {
+		return
+	}
+
+	// 发送响应消息
+	transfer := &utils.Transfer{
+		Conn: this.Conn,
+	}
+	err = transfer.WritePkg(resMesJson)
+
+
 	return
 }
