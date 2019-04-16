@@ -2,15 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8478f926-1f36-4064-b1d6-6bd55830463a" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/chatroom/client/process/server.go" beforeDir="false" afterPath="$PROJECT_DIR$/chatroom/client/process/server.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chatroom/client/process/smsProcess.go" beforeDir="false" afterPath="$PROJECT_DIR$/chatroom/client/process/smsProcess.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chatroom/client/process/userManager.go" beforeDir="false" afterPath="$PROJECT_DIR$/chatroom/client/process/userManager.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chatroom/client/process/userProcess.go" beforeDir="false" afterPath="$PROJECT_DIR$/chatroom/client/process/userProcess.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chatroom/common/message/message.go" beforeDir="false" afterPath="$PROJECT_DIR$/chatroom/common/message/message.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chatroom/server/main/processer.go" beforeDir="false" afterPath="$PROJECT_DIR$/chatroom/server/main/processer.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chatroom/server/process/process.go" beforeDir="false" afterPath="$PROJECT_DIR$/chatroom/server/process/chatProcess.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chatroom/server/process/userManager..go" beforeDir="false" afterPath="$PROJECT_DIR$/chatroom/server/process/userManager..go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/chatroom/server/process/userprocess.go" beforeDir="false" afterPath="$PROJECT_DIR$/chatroom/server/process/userprocess.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -27,7 +19,7 @@
         <entry file="file://$PROJECT_DIR$/chatroom/client/process/smsProcess.go">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="208">
-              <caret line="45" column="4" lean-forward="true" selection-start-line="45" selection-start-column="4" selection-end-line="45" selection-end-column="4" />
+              <caret line="45" column="4" selection-start-line="45" selection-start-column="4" selection-end-line="45" selection-end-column="4" />
               <folding>
                 <element signature="e#17#91#0" expanded="true" />
               </folding>
@@ -65,11 +57,20 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/chatroom/client/process/server.go">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="372">
               <caret line="69" selection-start-line="69" selection-end-line="69" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/.gitignore">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="34">
+              <caret line="2" selection-start-line="2" selection-end-line="2" />
             </state>
           </provider>
         </entry>
@@ -146,17 +147,7 @@
         <option value="$PROJECT_DIR$/chatroom/server/process/chatProcess.go" />
         <option value="$PROJECT_DIR$/chatroom/client/process/smsProcess.go" />
         <option value="$PROJECT_DIR$/chatroom/client/process/server.go" />
-      </list>
-    </option>
-  </component>
-  <component name="ProjectConfigurationFiles">
-    <option name="files">
-      <list>
-        <option value="$PROJECT_DIR$/.idea/gostudy.iml" />
-        <option value="$PROJECT_DIR$/.idea/misc.xml" />
-        <option value="$PROJECT_DIR$/.idea/modules.xml" />
-        <option value="$PROJECT_DIR$/.idea/vcs.xml" />
-        <option value="$PROJECT_DIR$/.idea/watcherTasks.xml" />
+        <option value="$PROJECT_DIR$/.gitignore" />
       </list>
     </option>
   </component>
@@ -182,71 +173,6 @@
             <path>
               <item name="gostudy" type="b2602c69:ProjectViewProjectNode" />
               <item name="gostudy" type="462c0819:PsiDirectoryNode" />
-              <item name="chatroom" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="gostudy" type="b2602c69:ProjectViewProjectNode" />
-              <item name="gostudy" type="462c0819:PsiDirectoryNode" />
-              <item name="chatroom" type="462c0819:PsiDirectoryNode" />
-              <item name="client" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="gostudy" type="b2602c69:ProjectViewProjectNode" />
-              <item name="gostudy" type="462c0819:PsiDirectoryNode" />
-              <item name="chatroom" type="462c0819:PsiDirectoryNode" />
-              <item name="client" type="462c0819:PsiDirectoryNode" />
-              <item name="main" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="gostudy" type="b2602c69:ProjectViewProjectNode" />
-              <item name="gostudy" type="462c0819:PsiDirectoryNode" />
-              <item name="chatroom" type="462c0819:PsiDirectoryNode" />
-              <item name="client" type="462c0819:PsiDirectoryNode" />
-              <item name="model" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="gostudy" type="b2602c69:ProjectViewProjectNode" />
-              <item name="gostudy" type="462c0819:PsiDirectoryNode" />
-              <item name="chatroom" type="462c0819:PsiDirectoryNode" />
-              <item name="client" type="462c0819:PsiDirectoryNode" />
-              <item name="process" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="gostudy" type="b2602c69:ProjectViewProjectNode" />
-              <item name="gostudy" type="462c0819:PsiDirectoryNode" />
-              <item name="chatroom" type="462c0819:PsiDirectoryNode" />
-              <item name="common" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="gostudy" type="b2602c69:ProjectViewProjectNode" />
-              <item name="gostudy" type="462c0819:PsiDirectoryNode" />
-              <item name="chatroom" type="462c0819:PsiDirectoryNode" />
-              <item name="common" type="462c0819:PsiDirectoryNode" />
-              <item name="message" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="gostudy" type="b2602c69:ProjectViewProjectNode" />
-              <item name="gostudy" type="462c0819:PsiDirectoryNode" />
-              <item name="chatroom" type="462c0819:PsiDirectoryNode" />
-              <item name="server" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="gostudy" type="b2602c69:ProjectViewProjectNode" />
-              <item name="gostudy" type="462c0819:PsiDirectoryNode" />
-              <item name="chatroom" type="462c0819:PsiDirectoryNode" />
-              <item name="server" type="462c0819:PsiDirectoryNode" />
-              <item name="main" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="gostudy" type="b2602c69:ProjectViewProjectNode" />
-              <item name="gostudy" type="462c0819:PsiDirectoryNode" />
-              <item name="chatroom" type="462c0819:PsiDirectoryNode" />
-              <item name="server" type="462c0819:PsiDirectoryNode" />
-              <item name="process" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="gostudy" type="b2602c69:ProjectViewProjectNode" />
-              <item name="gostudy" type="462c0819:PsiDirectoryNode" />
               <item name="tcp" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -264,6 +190,7 @@
   <component name="PropertiesComponent">
     <property name="ASKED_SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="DefaultGoTemplateProperty" value="Go File" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="go.gopath.indexing.explicitly.defined" value="true" />
     <property name="go.import.settings.migrated" value="true" />
@@ -401,7 +328,7 @@
     <entry file="file://$PROJECT_DIR$/chatroom/client/process/smsProcess.go">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="208">
-          <caret line="45" column="4" lean-forward="true" selection-start-line="45" selection-start-column="4" selection-end-line="45" selection-end-column="4" />
+          <caret line="45" column="4" selection-start-line="45" selection-start-column="4" selection-end-line="45" selection-end-column="4" />
           <folding>
             <element signature="e#17#91#0" expanded="true" />
           </folding>
@@ -412,6 +339,13 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="372">
           <caret line="69" selection-start-line="69" selection-end-line="69" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/.gitignore">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" selection-start-line="2" selection-end-line="2" />
         </state>
       </provider>
     </entry>
