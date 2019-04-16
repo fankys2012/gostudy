@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/fankys2012/gostudy/chatroom/client/model"
 	"github.com/fankys2012/gostudy/chatroom/common/cmodel"
 	"github.com/fankys2012/gostudy/chatroom/common/message"
 	"github.com/fankys2012/gostudy/chatroom/common/utils"
@@ -29,7 +30,7 @@ func NewUserPorcess() (userProcess *UserProcess, err error) {
 		conn: conn,
 	}
 	MyTransfer = &utils.Transfer{
-		Conn:conn,
+		Conn: conn,
 	}
 	return
 }
@@ -79,7 +80,7 @@ func (this *UserProcess) Login(userId int, userPwd string) (err error) {
 
 	err = transfer.WritePkg(data)
 	if err != nil {
-		fmt.Println("发送登录信息失败 err:",err)
+		fmt.Println("发送登录信息失败 err:", err)
 	}
 
 	mes, err = transfer.ReadPkg()
@@ -96,27 +97,36 @@ func (this *UserProcess) Login(userId int, userPwd string) (err error) {
 	if reponseMes.Code == 200 {
 
 		fmt.Println("当前在线用户列表:")
-		for id,v := range reponseMes.UserList {
+		for id, v := range reponseMes.UserList {
 			if id == userId {
 				continue
 			}
-			fmt.Printf("[%d:%s]",id,v)
+			fmt.Printf("[%d:%s]\r\n", id, v)
 
 			//本地维护的用户列表
 			user := &cmodel.User{
-				UserId:id,
-				UserName:v,
-				UserState:cmodel.UserOnline,
+				UserId:    id,
+				UserName:  v,
+				UserState: cmodel.UserOnline,
 			}
 			onlineUserList[id] = user
 		}
+
+		//保存当前用户信息
+		CurUserInfo = &model.UserInfo{
+			Conn: this.conn,
+		}
+		CurUserInfo.UserId = reponseMes.User.UserId
+		CurUserInfo.UserName = reponseMes.User.UserName
+		CurUserInfo.UserState = cmodel.UserOnline
+
 		/**
 		 * 启动一个协程，该协程保持与服务器端的通讯，如果服务器推送消息给客服端
 		 * 则接收并显示在终端
 		 */
 		go serverProcessMes(conn)
 		//显示登录成功后的界面
-		showMenu()
+		showMenu(conn)
 
 	} else if reponseMes.Code == 500 {
 		fmt.Println(reponseMes.Error)
@@ -144,7 +154,7 @@ func (this *UserProcess) userExitsCheck(id int) (err error) {
 	}
 	data, err = json.Marshal(sendData)
 	if err != nil {
-		fmt.Println("Marshal err :",err)
+		fmt.Println("Marshal err :", err)
 		return
 	}
 
@@ -158,7 +168,7 @@ func (this *UserProcess) userExitsCheck(id int) (err error) {
 	//处理服务器端响应消息
 	mes, err := transfer.ReadPkg()
 	if err != nil {
-		fmt.Println("userExitsCheck read response failed. err:",err)
+		fmt.Println("userExitsCheck read response failed. err:", err)
 		return
 	}
 
@@ -177,7 +187,7 @@ func (this *UserProcess) userExitsCheck(id int) (err error) {
 	return
 }
 
-func (this *UserProcess) PreRegister() (user *cmodel.User,err error) {
+func (this *UserProcess) PreRegister() (user *cmodel.User, err error) {
 	var userId int
 	var userPwd, userName string
 	fmt.Println("请输入用户ID")
@@ -195,7 +205,7 @@ func (this *UserProcess) PreRegister() (user *cmodel.User,err error) {
 	}
 	fmt.Println("请输入密码")
 	for {
-		fmt.Scanf("%s\n",&userPwd)
+		fmt.Scanf("%s\n", &userPwd)
 		if userPwd == "" {
 			fmt.Println("密码不能为空，请重新输入")
 		} else {
@@ -204,7 +214,7 @@ func (this *UserProcess) PreRegister() (user *cmodel.User,err error) {
 	}
 	fmt.Println("请输入昵称")
 	for {
-		fmt.Scanf("%s\n",&userName)
+		fmt.Scanf("%s\n", &userName)
 		if userName == "" {
 			fmt.Println("用户名不能为空，请重新输入")
 		} else {
@@ -213,38 +223,37 @@ func (this *UserProcess) PreRegister() (user *cmodel.User,err error) {
 	}
 
 	myUser := cmodel.User{
-		UserId:userId,
-		UserPwd:userPwd,
-		UserName:userName,
+		UserId:   userId,
+		UserPwd:  userPwd,
+		UserName: userName,
 	}
 	user = &myUser
-
 
 	fmt.Println("输入结束")
 	return
 }
 
 func (this *UserProcess) Register() (err error) {
-	user ,err := this.PreRegister()
+	user, err := this.PreRegister()
 	if err != nil {
 		return
 	}
 	regUser := message.RegisterMes{
-		User:*user,
+		User: *user,
 	}
-	fmt.Println("register user :",regUser)
-	userJsonData,err := json.Marshal(regUser)
+	fmt.Println("register user :", regUser)
+	userJsonData, err := json.Marshal(regUser)
 	if err != nil {
-		fmt.Println("user json failed ",err)
+		fmt.Println("user json failed ", err)
 	}
 
 	mes := message.Message{
-		Type:message.RegisterMesType,
-		Data:string(userJsonData),
+		Type: message.RegisterMesType,
+		Data: string(userJsonData),
 	}
-	mesData ,err := json.Marshal(mes)
-	if err !=nil {
-		fmt.Println("package register data failed ",err)
+	mesData, err := json.Marshal(mes)
+	if err != nil {
+		fmt.Println("package register data failed ", err)
 		return
 	}
 	//实例化utils 包
@@ -254,7 +263,7 @@ func (this *UserProcess) Register() (err error) {
 	transfer := MyTransfer
 	err = transfer.WritePkg(mesData)
 	if err != nil {
-		fmt.Println("send register message failed ",err)
+		fmt.Println("send register message failed ", err)
 		return
 	}
 	//处理服务器端响应消息
@@ -263,7 +272,7 @@ func (this *UserProcess) Register() (err error) {
 		return
 	}
 	var response message.StandardResponseMes
-	err = json.Unmarshal([]byte(mes.Data),&response)
+	err = json.Unmarshal([]byte(mes.Data), &response)
 	if err != nil {
 		return
 	}
@@ -275,4 +284,3 @@ func (this *UserProcess) Register() (err error) {
 	}
 	return
 }
-

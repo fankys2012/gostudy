@@ -12,10 +12,11 @@ import (
 
 //登录后界面
 
-func showMenu() {
+func showMenu(conn net.Conn) {
 	for {
 
-		fmt.Println("-----------登录成功-----------")
+		fmt.Printf("\t\t-----------欢迎[%d:%s]回来-----------\t", CurUserInfo.UserId, CurUserInfo.UserName)
+		fmt.Println("\t\t\t")
 		fmt.Println("\t\t\t 1 显示用户列表")
 		fmt.Println("\t\t\t 2 发送消息")
 		fmt.Println("\t\t\t 3 信息列表")
@@ -30,7 +31,10 @@ func showMenu() {
 		case 1:
 			showUserList()
 		case 2:
-			fmt.Println("发送消息")
+			err := sendMessage(conn)
+			if err != nil {
+				fmt.Println("发送消息失败,err:", err)
+			}
 		case 3:
 			fmt.Println("查看列表")
 		case 4:
@@ -54,13 +58,14 @@ func serverProcessMes(conn net.Conn) {
 			return
 		}
 		switch mes.Type {
-		case message.NotifyUserOnlineStateMesType:
+		case message.NotifyUserOnlineStateMesType: //用户上下线通知
 			var notifyUserState message.NotifyUserOnlineStateMes
-			json.Unmarshal([]byte(mes.Data),&notifyUserState)
-			
+			json.Unmarshal([]byte(mes.Data), &notifyUserState)
+			updateOnlineUserList(&notifyUserState)
+		case message.CharMessageMesType: //消息通知
+			showMessage(&mes)
 		default:
-			fmt.Printf("未知消息类型%s",mes.Type)
+			fmt.Printf("未知消息类型%s", mes.Type)
 		}
-		fmt.Println("读取到服务器消息 mes=", mes)
 	}
 }

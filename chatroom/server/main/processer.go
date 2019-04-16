@@ -23,14 +23,16 @@ func (this *Processer) serverProcessMes(mes *message.Message) (err error) {
 			Conn: this.Conn,
 		}
 		err = userprocess.ServerProcessLogin(mes)
-	case message.RegisterMesType://注册
+	case message.RegisterMesType: //注册
 
 		userprocess := process.NewUserPorcess(this.Conn)
 		err = userprocess.ServerRegister(mes)
 	case message.UserExitsMesType:
 		userprocess := process.NewUserPorcess(this.Conn)
 		err = userprocess.ServerCheckUserExitsById(mes)
-
+	case message.CharMessageMesType: //聊天消息
+		charProcess := process.NewChatProcess(this.Conn)
+		err = charProcess.SendChatMessage(mes)
 	default:
 		fmt.Println("消息类型不存在")
 

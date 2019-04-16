@@ -13,8 +13,8 @@ import (
 )
 
 type UserProcess struct {
-	Conn net.Conn
-	UserId int
+	Conn     net.Conn
+	UserId   int
 	UserName string
 }
 
@@ -40,14 +40,15 @@ func (this *UserProcess) ServerProcessLogin(mes *message.Message) (err error) {
 
 	//从redis/db 获取用户信息
 	redisConn := model.MyUserDao.RedisPool.Get()
-	user,err := model.MyUserDao.GetUserById(redisConn,loginMes.UserId)
+	user, err := model.MyUserDao.GetUserById(redisConn, loginMes.UserId)
 	if err != nil {
-		fmt.Println("获取用户信息失败,err:",err)
+		fmt.Println("获取用户信息失败,err:", err)
 		loginResMes.Code = 500
 		loginResMes.Error = "用户不存在，请重新登录"
 	} else {
 		if loginMes.UserId == user.UserId && loginMes.UserPwd == user.UserPwd {
 			loginResMes.Code = 200
+			loginResMes.User = user
 			//登录成功处理逻辑...
 			//将登录用户添加到在线用户列表中
 			this.UserId = loginMes.UserId
@@ -56,12 +57,12 @@ func (this *UserProcess) ServerProcessLogin(mes *message.Message) (err error) {
 
 			//将已上线的用户返回给当前登录用户
 			loginResMes.UserList = make(map[int]string)
-			for id ,user := range userMg.onlineUsers {
+			for id, user := range userMg.onlineUsers {
 				loginResMes.UserList[id] = user.UserName
 			}
 
 			//通知其他用户我上线了
-			this.NotifyOnlineState(cmodel.UserOnline)
+			this.NotifyOnlineState(user.UserId, cmodel.UserOnline, user.UserName)
 
 		} else {
 			//登陆失败
@@ -80,8 +81,8 @@ func (this *UserProcess) ServerProcessLogin(mes *message.Message) (err error) {
 
 	//返回消息体
 	resMes := message.Message{
-		Type:message.LoginResMesType,
-		Data:string(data),//切片转字符串
+		Type: message.LoginResMesType,
+		Data: string(data), //切片转字符串
 	}
 
 	fmt.Println("响应数据==", resMes.Data)
@@ -126,8 +127,8 @@ func (this *UserProcess) ServerCheckUserExitsById(mes *message.Message) (err err
 	}
 
 	smes := message.Message{
-		Type:message.UserExitsMesType,
-		Data:string(data),
+		Type: message.UserExitsMesType,
+		Data: string(data),
 	}
 	data, err = json.Marshal(smes)
 	if err != nil {
@@ -141,14 +142,14 @@ func (this *UserProcess) ServerCheckUserExitsById(mes *message.Message) (err err
 	}
 	err = transfer.WritePkg(data)
 	if err != nil {
-		fmt.Println("ServerCheckUserExitsById response faield err :",err)
+		fmt.Println("ServerCheckUserExitsById response faield err :", err)
 	}
 	return
 }
 
-func (this *UserProcess) ServerRegister(mes *message.Message)(err error)  {
+func (this *UserProcess) ServerRegister(mes *message.Message) (err error) {
 	var registerUser message.RegisterMes
-	err = json.Unmarshal([]byte(mes.Data),&registerUser)
+	err = json.Unmarshal([]byte(mes.Data), &registerUser)
 	if err != nil {
 		return
 	}
@@ -158,19 +159,19 @@ func (this *UserProcess) ServerRegister(mes *message.Message)(err error)  {
 		return
 	}
 	resposeMes := message.StandardResponseMes{
-		Code:200,
+		Code: 200,
 	}
 
-	resData ,err:= json.Marshal(resposeMes)
+	resData, err := json.Marshal(resposeMes)
 	if err != nil {
 		return
 	}
 
 	resMes := message.Message{
-		Type:message.StandardResponseMesType,
-		Data:string(resData),
+		Type: message.StandardResponseMesType,
+		Data: string(resData),
 	}
-	resMesJson ,err := json.Marshal(resMes)
+	resMesJson, err := json.Marshal(resMes)
 	if err != nil {
 		return
 	}
@@ -181,47 +182,47 @@ func (this *UserProcess) ServerRegister(mes *message.Message)(err error)  {
 	}
 	err = transfer.WritePkg(resMesJson)
 
-
 	return
 }
 
 //通知其他在线用户我的状态
-func (this *UserProcess) NotifyOnlineState(state int)  {
-	for id,uprocess := range userMg.onlineUsers {
+func (this *UserProcess) NotifyOnlineState(userId, state int, userName string) {
+	for id, uprocess := range userMg.onlineUsers {
 		//过滤自己
 		if id == this.UserId {
 			continue
 		}
-		uprocess.notifyState(id,state)
+		uprocess.notifyState(userId, state, userName)
 	}
 }
 
-func (this *UserProcess) notifyState(userId ,state int)  {
+func (this *UserProcess) notifyState(userId, state int, userName string) {
 	//通知消息体
 	userState := message.NotifyUserOnlineStateMes{
-		UserId:userId,
-		UserState:state,
+		UserId:    userId,
+		UserState: state,
+		UserName:  userName,
 	}
 
-	data,err := json.Marshal(userState)
+	data, err := json.Marshal(userState)
 	if err != nil {
 		return
 	}
 
 	mes := message.Message{
-		Type:message.NotifyUserOnlineStateMesType,
-		Data:string(data),
+		Type: message.NotifyUserOnlineStateMesType,
+		Data: string(data),
 	}
-	data,err = json.Marshal(mes)
+	data, err = json.Marshal(mes)
 	if err != nil {
 		return
 	}
 
 	transfer := &utils.Transfer{
-		Conn:this.conn,
+		Conn: this.Conn,
 	}
 	err = transfer.WritePkg(data)
-	if err !=nil {
+	if err != nil {
 		return
 	}
 
